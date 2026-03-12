@@ -10,7 +10,8 @@ const app = express();
 // ✅ UPDATED CORS CONFIGURATION FOR NETLIFY
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://vocal-malasada-84c08d.netlify.app',  // Your Netlify frontend
+  'https://vocal-malasada-84c08d.netlify.app',  
+  'https://stock-trading-smartbridge.netlify.app', // Your Netlify frontend
   'https://stock-trading-api-in2x.onrender.com'
 ];
 
