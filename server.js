@@ -6,6 +6,10 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
+// Add this after your routes for health check
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Server is running' });
+});
 // Find the CORS section and replace with this:
 const corsOptions = {
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -14,10 +18,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Add this after your routes for health check
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running' });
-});
+
 
 app.use(express.json());
 
