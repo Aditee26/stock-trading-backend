@@ -7,15 +7,15 @@ dotenv.config();
 
 const app = express();
 
-// ✅ UPDATED CORS CONFIGURATION FOR NETLIFY
+// ✅ SIMPLIFIED & ROBUST CORS CONFIGURATION
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://vocal-malasada-84c08d.netlify.app',  
-  'https://stock-trading-smartbridge.netlify.app', // Your Netlify frontend
-  'https://stock-trading-api-in2x.onrender.com'
+  'https://vocal-malasada-84c08d.netlify.app',
+  'https://stock-trading-smartbridge.netlify.app'
 ];
 
-const corsOptions = {
+// Apply CORS middleware with specific options
+app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, curl, Postman)
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -27,12 +27,12 @@ const corsOptions = {
   },
   credentials: true,
   optionsSuccessStatus: 200
-};
+}));
 
-// Apply CORS middleware
-app.use(cors(corsOptions));
+// Handle preflight requests for all routes
+app.options('*', cors());
 
-// ✅ ADDITIONAL HEADERS MIDDLEWARE (BACKUP)
+// Additional headers middleware (backup)
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
@@ -41,16 +41,25 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Credentials', 'true');
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    return res.status(200).json({});
-  }
-  
   next();
 });
 
 app.use(express.json());
+
+// Root route - shows API is running
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Stock Trading API is running',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      stocks: '/api/stocks',
+      portfolio: '/api/portfolio',
+      transactions: '/api/transactions'
+    }
+  });
+});
 
 // Health check route
 app.get('/health', (req, res) => {
@@ -77,4 +86,5 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/stock_tra
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🔗 Allowed origins:`, allowedOrigins);
 });
