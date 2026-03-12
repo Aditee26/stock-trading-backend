@@ -6,11 +6,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-// Add this after your routes for health check
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running' });
-});
-// Find the CORS section and replace with this:
+
+// CORS configuration
 const corsOptions = {
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true,
@@ -18,16 +15,14 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-
-
 app.use(express.json());
 
-// Test route
+// Health check route (only once!)
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server running' });
+  res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
-// Import routes one by one to find the issue
+// Import routes
 try {
   const authRoutes = require('./routes/authRoutes');
   app.use('/api/auth', authRoutes);
@@ -36,12 +31,15 @@ try {
   console.error('❌ Error loading auth routes:', error.message);
 }
 
-// MongoDB connection
-mongoose.connect('mongodb://localhost:27017/stock_trading')
-  .then(() => console.log('✅ MongoDB Connected'))
-  .catch(err => console.error('❌ MongoDB error:', err));
+// ✅ FIXED: MongoDB connection using environment variable
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/stock_trading', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('✅ MongoDB Connected Successfully'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
